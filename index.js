@@ -15,14 +15,14 @@ const converter = new showdown.Converter({ metadata: true });
 const walk = async (dir, test) => {
 	return new Promise((resolve, reject) => {
 		fs.readdir(dir, async function(err, list) {
-		    if (err) reject(err);
+	    if (err) reject(err);
 
-		    let pending = list.length;
+	    let pending = list.length;
 
-		    if (!pending) return reject(err);
+	    if (!pending) return reject(err);
 
-		    for (const file of list) {
-	      		filePath = path.resolve(dir, file);
+	    for (const file of list) {
+      	filePath = path.resolve(dir, file);
 
 				const stat = await fs.stat(filePath);
 
@@ -66,15 +66,11 @@ const walk = async (dir, test) => {
 						let fileTemplate = fileData.template || "base";
 						let fileTemplatePath = path.join(templateDir, fileTemplate + ".ejs");
 
-						//Get template code
-						let template = await fs.readFile(fileTemplatePath, 'utf-8');
-
-						let renderedFile = ejs.render(template, {
+						const renderedFile = await ejs.renderFile(fileTemplatePath, {
 							content: fileHTML,
 							static: static,
-							templates: templateDir,
 							...fileMetadata
-						});
+						}, { async: true });
 
 						//Place in new directory
 						let fileOutput = path.resolve(joined, fileData.name + ".html");
@@ -82,7 +78,7 @@ const walk = async (dir, test) => {
 						await fs.outputFile(fileOutput, renderedFile);
 					}
 				}
-		    }
+		  }
 
 			resolve();
 		});
