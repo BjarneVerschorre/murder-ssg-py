@@ -72,6 +72,7 @@ const walk = async (dir, test) => {
 						let renderedFile = ejs.render(template, {
 							content: fileHTML,
 							static: static,
+							templates: templateDir,
 							...fileMetadata
 						});
 
