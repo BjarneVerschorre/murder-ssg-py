@@ -8,6 +8,7 @@ require('dotenv').config();
 const buildDir = path.join(__dirname, 'build');
 const sourceDir = path.join(__dirname, 'src');
 const templateDir = path.join(__dirname, 'templates');
+const staticDir = path.join(__dirname, 'static');
 
 const converter = new showdown.Converter({ metadata: true });
 
@@ -51,6 +52,14 @@ const walk = async (dir, test) => {
 						let relative = path.relative(sourceDir, fileData.dir);
 						let joined = path.join(buildDir, relative);
 
+						//Generate relative static path (ensure POSIX)
+						let static = path.relative(fileData.dir, staticDir);
+						//Ensure POSIX
+						static = static.replace(/\\/g, "/");
+						//Account for directory level
+						static = static.replace('../', '');
+						console.log(static);
+
 						//Render file
 
 						//Get a specific template, or render with a default
@@ -62,6 +71,7 @@ const walk = async (dir, test) => {
 
 						let renderedFile = ejs.render(template, {
 							content: fileHTML,
+							static: static,
 							...fileMetadata
 						});
 
@@ -81,16 +91,23 @@ const walk = async (dir, test) => {
 async function main (directory) {
   try {
   	console.time('Execution time');
-  	//Ensure /build directory exists
+  	//Ensure directories
     await fs.ensureDir(buildDir);
+    await fs.ensureDir(sourceDir);
+    await fs.ensureDir(templateDir);
+    await fs.ensureDir(staticDir);
 
-    if (!process.env.ERASE_BUILD !=== "false") await fs.emptyDir(buildDir);
+    if (!process.env.ERASE_BUILD !== "false") await fs.emptyDir(buildDir);
 
+    //Build markdown files
     console.log("Building...");
     await walk(sourceDir);
     console.log("Built.");
 
-	console.timeEnd('Execution time');
+    //Copy static files
+    await fs.copy(staticDir, path.join(buildDir, "static"));
+
+		console.timeEnd('Execution time');
   }
   catch (err) {
     console.error(err);
