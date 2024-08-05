@@ -15,14 +15,14 @@ const converter = new showdown.Converter({ metadata: true });
 const walk = async (dir, test) => {
 	return new Promise((resolve, reject) => {
 		fs.readdir(dir, async function(err, list) {
-	    if (err) reject(err);
+			if (err) reject(err);
 
-	    let pending = list.length;
+			let pending = list.length;
 
-	    if (!pending) return reject(err);
+			if (!pending) return reject(err);
 
-	    for (const file of list) {
-      	filePath = path.resolve(dir, file);
+			for (const file of list) {
+				filePath = path.resolve(dir, file);
 
 				const stat = await fs.stat(filePath);
 
@@ -68,6 +68,7 @@ const walk = async (dir, test) => {
 						const renderedFile = await ejs.renderFile(fileTemplatePath, {
 							content: fileHTML,
 							static: static,
+							slug: fileData.name,
 							...fileMetadata
 						}, { async: true });
 
@@ -77,7 +78,7 @@ const walk = async (dir, test) => {
 						await fs.outputFile(fileOutput, renderedFile);
 					}
 				}
-		  }
+			}
 
 			resolve();
 		});
@@ -85,29 +86,30 @@ const walk = async (dir, test) => {
 }
 
 async function main (directory) {
-  try {
-  	console.time('Execution time');
-  	//Ensure directories
-    await fs.ensureDir(buildDir);
-    await fs.ensureDir(sourceDir);
-    await fs.ensureDir(templateDir);
-    await fs.ensureDir(staticDir);
+	try {
+		console.time('Execution time');
+		//Ensure directories
+		await fs.ensureDir(buildDir);
+		await fs.ensureDir(sourceDir);
+		await fs.ensureDir(templateDir);
+		await fs.ensureDir(staticDir);
 
-    if (!process.env.ERASE_BUILD !== "false") await fs.emptyDir(buildDir);
+		if (!process.env.ERASE_BUILD !== "false") await fs.emptyDir(buildDir);
 
-    //Build markdown files
-    console.log("Building...");
-    await walk(sourceDir);
-    console.log("Built.");
+		console.log("Building...");
 
-    //Copy static files
-    await fs.copy(staticDir, path.join(buildDir, "static"));
+		//Build markdown files
+		await walk(sourceDir);
 
+		//Copy static files
+		await fs.copy(staticDir, path.join(buildDir, "static"));
+
+		console.log("Built.");
 		console.timeEnd('Execution time');
-  }
-  catch (err) {
-    console.error(err);
-  }
+	}
+	catch (err) {
+		console.error(err);
+	}
 }
 
 main();
