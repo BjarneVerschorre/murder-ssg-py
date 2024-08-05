@@ -58,7 +58,6 @@ const walk = async (dir, test) => {
 						static = static.replace(/\\/g, "/");
 						//Account for directory level
 						static = static.replace('../', '');
-						console.log(static);
 
 						//Render file
 
