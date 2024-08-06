@@ -1,2 +1,2 @@
-# murder-ssg
-JavaScript-based Static Site Generator with no edge.
+# murder-ssg-py
+Python-based Static Site Generator with no edge.
